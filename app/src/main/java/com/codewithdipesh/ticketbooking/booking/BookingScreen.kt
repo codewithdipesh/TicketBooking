@@ -1,28 +1,41 @@
 package com.codewithdipesh.ticketbooking.booking
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.codewithdipesh.ticketbooking.R
+import com.codewithdipesh.ticketbooking.booking.components.AmountChooser
+import com.codewithdipesh.ticketbooking.booking.components.WhenToWatchScreen
 import com.codewithdipesh.ticketbooking.model.Movie
 
 @OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class)
@@ -35,6 +48,8 @@ fun BookingScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showAmountPicker by rememberSaveable { mutableStateOf(false) }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = Color.Black,
@@ -47,14 +62,25 @@ fun BookingScreen(
                 contentAlignment = Alignment.CenterStart
             ){
                 IconButton(
-                    onClick = onBack,
+                    onClick = {
+                        if(showAmountPicker) showAmountPicker = false
+                        else onBack()
+                    },
                     modifier = Modifier.padding(start = 8.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
-                        tint = Color.White
-                    )
+                    if(showAmountPicker){
+                        Icon(
+                            painter = painterResource(R.drawable.back_arrow),
+                            contentDescription = null,
+                            tint = Color.White
+                        )
+                    }else{
+                        Icon(
+                            imageVector = Icons.Filled.Close,
+                            contentDescription = "Back",
+                            tint = Color.White
+                        )
+                    }
                 }
             }
         }
@@ -87,7 +113,7 @@ fun BookingScreen(
                 Spacer(modifier = Modifier.width(16.dp))
 
                 // Movie Details
-                Column {
+                Column(verticalArrangement = Arrangement.Center){
                     with(sharedTransitionScope){
                         Image(
                             painter = rememberAsyncImagePainter(movie.titleUrl),
@@ -102,7 +128,7 @@ fun BookingScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
 
                     Text(
                         text = "${movie.releaseYear} · ${movie.genres.first()} · ${movie.durationMinutes} min",
@@ -110,7 +136,7 @@ fun BookingScreen(
                         fontSize = 12.sp
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
 
                     // IMDb Rating Badge
                     Row(
@@ -132,7 +158,39 @@ fun BookingScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(40.dp))
+
+            HorizontalDivider(
+                thickness = 0.5.dp,
+                color = Color.White.copy(0.3f),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(40.dp))
+
+            // Slide between AmountChooser ↔ WhenToWatch
+            AnimatedContent(
+                targetState = showAmountPicker,
+                transitionSpec = {
+                    if (targetState) {
+                        // Slide left (forward)
+                        slideInHorizontally { it } + fadeIn() togetherWith
+                                slideOutHorizontally { -it } + fadeOut()
+                    } else {
+                        // Slide right (back)
+                        slideInHorizontally { -it } + fadeIn() togetherWith
+                                slideOutHorizontally { it } + fadeOut()
+                    }
+                },
+                modifier = modifier,
+                label = "bookingFlow"
+            ) { isAmountScreen ->
+                if (isAmountScreen) {
+                    AmountChooser()
+                } else {
+                    WhenToWatchScreen()
+                }
+            }
         }
     }
 }

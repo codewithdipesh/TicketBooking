@@ -10,12 +10,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
@@ -87,7 +91,39 @@ fun HomeScreen(
                     modifier = Modifier.size(36.dp)
                 )
             }
-        }
+        },
+        bottomBar = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(80.dp)
+                    .padding(horizontal = 26.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ){
+                Icon(
+                    painter = painterResource(R.drawable.home),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = Color.White
+                )
+                Spacer(Modifier.width(64.dp))
+                Icon(
+                    painter = painterResource(R.drawable.search),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = Color.White.copy(0.7f)
+                )
+                Spacer(Modifier.width(64.dp))
+                Icon(
+                    painter = painterResource(R.drawable.tickets),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = Color.White.copy(0.7f)
+                )
+            }
+        },
+        contentWindowInsets = WindowInsets(0)
     ){ innerPadding ->
 
         Column(
@@ -185,7 +221,7 @@ fun HomeScreen(
                 )
             }
 
-            Spacer(Modifier.height(40.dp))
+            Spacer(Modifier.height(60.dp))
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)){
                 Box(
