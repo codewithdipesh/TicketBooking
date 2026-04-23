@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.codewithdipesh.ticketbooking.booking.BookingScreen
+import com.codewithdipesh.ticketbooking.booking.TheatreScreen
 import com.codewithdipesh.ticketbooking.home.HomeScreen
 import com.codewithdipesh.ticketbooking.model.movies
 
@@ -42,8 +43,22 @@ fun AppNavigation(modifier: Modifier = Modifier) {
                     movie = movie,
                     sharedTransitionScope = this@SharedTransitionLayout,
                     animatedVisibilityScope = this,
-                    onBookingConfirmed = {},
+                    onPreBookingConfirmed = { seats, day, time ->
+                        navController.navigate(TheatreRoute(seats = seats, day = day, time = time))
+                    },
                     onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable<TheatreRoute>{ backStackEntry ->
+                val route = backStackEntry.toRoute<TheatreRoute>()
+
+                TheatreScreen(
+                    seats = route.seats,
+                    day = route.day,
+                    time = route.time,
+                    onContinue = {},
+                    onBack = { navController.navigateUp() }
                 )
             }
 

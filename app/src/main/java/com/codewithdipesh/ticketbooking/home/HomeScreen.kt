@@ -193,7 +193,7 @@ fun HomeScreen(
 
                 }
             }
-
+            //release date and rating
             val currentMovie = movies[pagerState.currentPage]
             Spacer(Modifier.height(32.dp))
             Text(
@@ -223,6 +223,7 @@ fun HomeScreen(
 
             Spacer(Modifier.height(60.dp))
 
+            //buy tickets button
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)){
                 Box(
                     modifier = Modifier

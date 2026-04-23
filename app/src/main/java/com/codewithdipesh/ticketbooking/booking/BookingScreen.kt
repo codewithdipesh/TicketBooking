@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -28,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,11 +42,14 @@ fun BookingScreen(
     movie : Movie,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    onBookingConfirmed: () -> Unit,
+    onPreBookingConfirmed: (seats: Int, day: Int, time: String) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var showAmountPicker by rememberSaveable { mutableStateOf(false) }
+
+    var subScreenNumber by rememberSaveable { mutableStateOf(1) }
+    var selectedDay by rememberSaveable { mutableStateOf(0) }
+    var selectedTime by rememberSaveable { mutableStateOf("") }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -63,12 +64,12 @@ fun BookingScreen(
             ){
                 IconButton(
                     onClick = {
-                        if(showAmountPicker) showAmountPicker = false
+                        if(subScreenNumber > 1) subScreenNumber--
                         else onBack()
                     },
                     modifier = Modifier.padding(start = 8.dp)
                 ) {
-                    if(showAmountPicker){
+                    if(subScreenNumber > 1){
                         Icon(
                             painter = painterResource(R.drawable.back_arrow),
                             contentDescription = null,
@@ -85,110 +86,129 @@ fun BookingScreen(
             }
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
+
+        Box(
+            modifier = Modifier.fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 16.dp)
-        ) {
-            //Movie Header Row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+        ){
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .align(Alignment.TopCenter)
             ) {
+                //Movie Header Row
 
-                with(sharedTransitionScope) {
-                    Image(
-                        painter = rememberAsyncImagePainter(movie.posterUrl),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .sharedElement(
-                                rememberSharedContentState(key = "movie-poster-${movie.id}"),
-                                animatedVisibilityScope = animatedVisibilityScope
-                            )
-                            .size(width = 140.dp, height = 100.dp)
-                            .clip(RoundedCornerShape(22.dp)),
-                        contentScale = ContentScale.Crop
-                    )
-                }
-                Spacer(modifier = Modifier.width(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
 
-                // Movie Details
-                Column(verticalArrangement = Arrangement.Center){
-                    with(sharedTransitionScope){
+                    with(sharedTransitionScope) {
                         Image(
-                            painter = rememberAsyncImagePainter(movie.titleUrl),
+                            painter = rememberAsyncImagePainter(movie.posterUrl),
                             contentDescription = null,
                             modifier = Modifier
                                 .sharedElement(
-                                    rememberSharedContentState(key = "movie-title-${movie.id}"),
+                                    rememberSharedContentState(key = "movie-poster-${movie.id}"),
                                     animatedVisibilityScope = animatedVisibilityScope
-                                ),
-                            contentScale = ContentScale.FillHeight,
-                            alpha = 0.7f
+                                )
+                                .size(width = 140.dp, height = 100.dp)
+                                .clip(RoundedCornerShape(22.dp)),
+                            contentScale = ContentScale.Crop
                         )
                     }
+                    Spacer(modifier = Modifier.width(16.dp))
 
-                    Spacer(modifier = Modifier.height(6.dp))
+                    // Movie Details
+                    Column(verticalArrangement = Arrangement.Center){
+                        with(sharedTransitionScope){
+                            Image(
+                                painter = rememberAsyncImagePainter(movie.titleUrl),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .sharedElement(
+                                        rememberSharedContentState(key = "movie-title-${movie.id}"),
+                                        animatedVisibilityScope = animatedVisibilityScope
+                                    ),
+                                contentScale = ContentScale.FillHeight,
+                                alpha = 0.7f
+                            )
+                        }
 
-                    Text(
-                        text = "${movie.releaseYear} · ${movie.genres.first()} · ${movie.durationMinutes} min",
-                        color = Color.White.copy(0.7f),
-                        fontSize = 12.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(2.dp))
-
-                    // IMDb Rating Badge
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.imdb),
-                            contentDescription = null,
-                            modifier = Modifier.height(16.dp)
-                        )
+                        Spacer(modifier = Modifier.height(6.dp))
 
                         Text(
-                            text = "${movie.rating}",
+                            text = "${movie.releaseYear} · ${movie.genres.first()} · ${movie.durationMinutes} min",
                             color = Color.White.copy(0.7f),
                             fontSize = 12.sp
                         )
+
+                        Spacer(modifier = Modifier.height(2.dp))
+
+                        // IMDb Rating Badge
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Image(
+                                painter = painterResource(R.drawable.imdb),
+                                contentDescription = null,
+                                modifier = Modifier.height(16.dp)
+                            )
+
+                            Text(
+                                text = "${movie.rating}",
+                                color = Color.White.copy(0.7f),
+                                fontSize = 12.sp
+                            )
+                        }
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(40.dp))
+                Spacer(modifier = Modifier.height(40.dp))
 
-            HorizontalDivider(
-                thickness = 0.5.dp,
-                color = Color.White.copy(0.3f),
-                modifier = Modifier.fillMaxWidth()
-            )
+                HorizontalDivider(
+                    thickness = 0.5.dp,
+                    color = Color.White.copy(0.3f),
+                    modifier = Modifier.fillMaxWidth()
+                )
 
-            Spacer(modifier = Modifier.height(40.dp))
+                Spacer(modifier = Modifier.height(40.dp))
 
-            // Slide between AmountChooser ↔ WhenToWatch
-            AnimatedContent(
-                targetState = showAmountPicker,
-                transitionSpec = {
-                    if (targetState) {
-                        // Slide left (forward)
-                        slideInHorizontally { it } + fadeIn() togetherWith
-                                slideOutHorizontally { -it } + fadeOut()
-                    } else {
-                        // Slide right (back)
-                        slideInHorizontally { -it } + fadeIn() togetherWith
-                                slideOutHorizontally { it } + fadeOut()
+                // Slide between WhenToWatch, AmountChooser and Theatre
+                AnimatedContent(
+                    targetState = subScreenNumber,
+                    transitionSpec = {
+                        when {
+                            targetState > initialState -> {
+                                // Forward (horizontal)
+                                slideInHorizontally { it } + fadeIn() togetherWith
+                                        slideOutHorizontally { -it } + fadeOut()
+                            }
+                            else -> {
+                                // Back (horizontal)
+                                slideInHorizontally { -it } + fadeIn() togetherWith
+                                        slideOutHorizontally { it } + fadeOut()
+                            }
+                        }
+                    },
+                    modifier = modifier,
+                    label = "bookingFlow"
+                ) { screen ->
+                    when (screen) {
+                        1 -> WhenToWatchScreen(
+                            onContinue = { day, time ->
+                                selectedDay = day
+                                selectedTime = time
+                                subScreenNumber = 2
+                            }
+                        )
+                        2 -> AmountChooser(
+                            onContinue = { seats ->
+                                onPreBookingConfirmed(seats, selectedDay, selectedTime)
+                            }
+                        )
                     }
-                },
-                modifier = modifier,
-                label = "bookingFlow"
-            ) { isAmountScreen ->
-                if (isAmountScreen) {
-                    AmountChooser()
-                } else {
-                    WhenToWatchScreen()
                 }
             }
         }
