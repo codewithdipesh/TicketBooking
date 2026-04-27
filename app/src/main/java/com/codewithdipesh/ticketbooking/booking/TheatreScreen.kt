@@ -15,15 +15,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,25 +38,36 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codewithdipesh.ticketbooking.R
+import com.codewithdipesh.ticketbooking.booking.components.CheckoutBottomSheet
+import com.codewithdipesh.ticketbooking.booking.components.DayItem
 import com.codewithdipesh.ticketbooking.booking.components.SeatHall
 import com.codewithdipesh.ticketbooking.booking.seatBooking.OpenGLCinemaView
 import com.codewithdipesh.ticketbooking.home.elements.customClickable
+import com.codewithdipesh.ticketbooking.model.Movie
+import com.codewithdipesh.ticketbooking.model.movies
 import kotlinx.coroutines.delay
+import kotlin.Int
+import kotlin.Pair
 
 
 private const val SAMPLE_TRAILER_URL =
     "https://res.cloudinary.com/daw9ly1fj/video/upload/v1776793845/the_bad_guys_trailor_fkm4iv.mp4"
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TheatreScreen(
     modifier: Modifier = Modifier,
     seats: Int,
-    day: Int,
+    movie: Movie,
+    day: DayItem,
     time: String,
     videoUri: String = SAMPLE_TRAILER_URL,
-    onContinue : () -> Unit,
+    onContinue : (List<Pair<Int, Int>>) -> Unit,
     onBack : () -> Unit
 ) {
+    var showCheckout by rememberSaveable { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var selectedSeats by remember { mutableStateOf<List<Pair<Int, Int>>>(emptyList()) }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -79,6 +93,17 @@ fun TheatreScreen(
             }
         }
     ){
+        if (showCheckout) {
+            CheckoutBottomSheet(
+                movie = movie,
+                dateTime = day.fullLabel + " at $time",
+                seats = selectedSeats,
+                onDismiss = { showCheckout = false },
+                onContinue = { onContinue(selectedSeats) },
+                sheetState = sheetState
+            )
+        }
+
         Column(
             modifier = modifier.fillMaxSize()
                 .padding(it)
@@ -102,7 +127,10 @@ fun TheatreScreen(
                     fontSize = 12.sp
                 )
                 OpenGLCinemaView(videoUri = videoUri)
-                SeatHall(seatCount = seats)
+                SeatHall(
+                    seatCount = seats,
+                    onSelectionChange = { picked -> selectedSeats = picked }
+                )
                 Spacer(Modifier.height(16.dp))
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -111,7 +139,7 @@ fun TheatreScreen(
                     Box(
                         modifier = Modifier.wrapContentSize()
                             .clip(RoundedCornerShape(30.dp))
-                            .background(Color.White.copy(0.3f)),
+                            .background(Color.White.copy(0.1f)),
                         contentAlignment = Alignment.Center
                     ){
                         Text(
@@ -133,7 +161,9 @@ fun TheatreScreen(
 
             Box(
                 modifier = Modifier
-                    .customClickable(onClick = onContinue)
+                    .customClickable(onClick = {
+                        showCheckout = true
+                    })
                     .fillMaxWidth()
                     .padding(vertical = 16.dp)
                     .height(50.dp)

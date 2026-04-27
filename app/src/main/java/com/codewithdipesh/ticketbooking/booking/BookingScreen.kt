@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.codewithdipesh.ticketbooking.R
 import com.codewithdipesh.ticketbooking.booking.components.AmountChooser
+import com.codewithdipesh.ticketbooking.booking.components.DayItem
 import com.codewithdipesh.ticketbooking.booking.components.WhenToWatchScreen
 import com.codewithdipesh.ticketbooking.model.Movie
 
@@ -42,13 +43,13 @@ fun BookingScreen(
     movie : Movie,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    onPreBookingConfirmed: (seats: Int, day: Int, time: String) -> Unit,
+    onPreBookingConfirmed: (seats: Int, day: DayItem, time: String) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
 
     var subScreenNumber by rememberSaveable { mutableStateOf(1) }
-    var selectedDay by rememberSaveable { mutableStateOf(0) }
+    var selectedDay by rememberSaveable { mutableStateOf<DayItem?>(null) }
     var selectedTime by rememberSaveable { mutableStateOf("") }
 
     Scaffold(
@@ -205,7 +206,9 @@ fun BookingScreen(
                         )
                         2 -> AmountChooser(
                             onContinue = { seats ->
-                                onPreBookingConfirmed(seats, selectedDay, selectedTime)
+                                selectedDay?.let { day ->
+                                    onPreBookingConfirmed(seats, day, selectedTime)
+                                }
                             }
                         )
                     }

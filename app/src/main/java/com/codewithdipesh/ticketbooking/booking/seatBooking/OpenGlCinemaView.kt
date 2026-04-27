@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
@@ -65,7 +66,7 @@ fun OpenGLCinemaView(
 
     val animatedHeight by animateDpAsState(
         targetValue = if (showCinema) 220.dp else 0.dp,
-        animationSpec = tween(durationMillis = 2000),
+        animationSpec = tween(durationMillis = 1500),
         label = "cinemaHeight"
     )
     val animatedAlpha by animateFloatAsState(
@@ -76,7 +77,8 @@ fun OpenGLCinemaView(
 
     Box(
         modifier = modifier
-            .size(400.dp,220.dp)
+            .size(400.dp,220.dp),
+        contentAlignment = Alignment.BottomCenter
     ){
         AndroidView(
             factory = { glView },

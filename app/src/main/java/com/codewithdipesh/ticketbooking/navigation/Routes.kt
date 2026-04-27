@@ -13,7 +13,21 @@ data class DetailsRoute(val eventId: String)
 data class BookingRoute(val movieId: String)
 
 @Serializable
-data class TheatreRoute(val seats: Int, val day: Int, val time: String)
+data class TheatreRoute(
+    val movieId: String,
+    val seatNumber: Int,
+    val dayNumber: Int,
+    val dayLabel: String,
+    val dayFullLabel: String,
+    val time: String
+)
 
 @Serializable
-data object TicketsRoute
+data class TicketsRoute(
+    val movieId: String,
+    val seatListString: String,
+    val dayNumber: Int,
+    val dayLabel: String,
+    val dayFullLabel: String,
+    val time: String
+)

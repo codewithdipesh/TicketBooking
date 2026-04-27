@@ -44,26 +44,27 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codewithdipesh.ticketbooking.home.elements.customClickable
+import kotlinx.serialization.Serializable
 
-
-data class DayItem(val number: Int, val label: String)
+@Serializable
+data class DayItem(val number: Int, val label: String, val fullLabel: String = "") : java.io.Serializable
 data class TimeSlot(val display: String , val availability : Float )
 
 
 @Composable
 fun WhenToWatchScreen(
     modifier: Modifier = Modifier,
-    onContinue : (day: Int, time: String) -> Unit
+    onContinue : (day: DayItem, time: String) -> Unit
 ) {
     val days = remember {
         listOf(
-            DayItem(11, "T"),
-            DayItem(12, "W"),
-            DayItem(13, "T"),
-            DayItem(14, "F"),
-            DayItem(15, "S"),
-            DayItem(16, "S"),
-            DayItem(17, "M"),
+            DayItem(11, "T" , "Tue, May 11"),
+            DayItem(12, "W", "Wed, May 12"),
+            DayItem(13, "T", "Thur, May 13"),
+            DayItem(14, "F", "Fri, May 14"),
+            DayItem(15, "S", "Sat, May 15"),
+            DayItem(16, "S", "Sun, May 16"),
+            DayItem(17, "M", "Mon, May 17"),
         )
     }
     val timeSlots = remember {
@@ -74,7 +75,7 @@ fun WhenToWatchScreen(
         )
     }
 
-    var selectedDay by rememberSaveable { mutableStateOf(0) }
+    var selectedDay by rememberSaveable { mutableStateOf<DayItem?>(null) }
     var selectedTime by rememberSaveable { mutableStateOf(-1) }
     var expanded by rememberSaveable { mutableStateOf(false) }
 
@@ -116,8 +117,8 @@ fun WhenToWatchScreen(
                 items(visibleDays){
                     DayButton(
                         day = it,
-                        selected = selectedDay == it.number,
-                        onClick = { selectedDay = it.number }
+                        selected = selectedDay?.number == it.number,
+                        onClick = { selectedDay = it }
                     )
                 }
                 item {
@@ -144,7 +145,7 @@ fun WhenToWatchScreen(
             Spacer(Modifier.height(40.dp))
             //show the time slots only after the date selection
             AnimatedVisibility (
-                visible = selectedDay != 0,
+                visible = selectedDay != null,
                 enter = fadeIn(tween(200))
                     .plus(scaleIn(tween(200))),
                 exit = fadeOut(tween(300))
@@ -160,7 +161,7 @@ fun WhenToWatchScreen(
                 }
             }
             //show text for not sleecting date
-            if(selectedDay == 0){
+            if(selectedDay == null){
                 Spacer(Modifier.height(96.dp))
                 Text(
                     text = "Select a day to see the \n available showtimes",
@@ -179,8 +180,9 @@ fun WhenToWatchScreen(
             modifier = Modifier
                 .customClickable(
                     onClick = {
-                        if(selectedTime != -1){
-                            onContinue(selectedDay, timeSlots[selectedTime].display)
+                        val day = selectedDay
+                        if(selectedTime != -1 && day != null){
+                            onContinue(day, timeSlots[selectedTime].display)
                         }
                     }
                 )

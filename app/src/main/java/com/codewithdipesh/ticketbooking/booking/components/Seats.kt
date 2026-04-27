@@ -69,7 +69,8 @@ fun findContinuousSeats(
 @Composable
 fun SeatHall(
     seatCount: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onSelectionChange: (List<Pair<Int, Int>>) -> Unit = {}
 ) {
     val rows = remember {
         seatArrangements.map { it.toMutableStateList() }.toMutableStateList()
@@ -101,7 +102,7 @@ fun SeatHall(
                 ) {
                     row.forEachIndexed { colIdx, seat ->
                         val color = when (seat) {
-                            SeatStatus.B -> Color.Gray.copy(0.5f)
+                            SeatStatus.B -> Color.Gray.copy(0.2f)
                             SeatStatus.A -> Color.Gray
                             SeatStatus.S -> Color(0xFFF5C800)
                             SeatStatus.NA -> Color.Transparent
@@ -132,6 +133,7 @@ fun SeatHall(
                                         // Apply new selection.
                                         block.forEach { c -> rows[rowIdx][c] = SeatStatus.S }
                                         selected = block.map { rowIdx to it }
+                                        onSelectionChange(selected)
                                     }
                             )
                         } else {
@@ -159,18 +161,18 @@ fun SeatHall(
                         .offset {
                             IntOffset(
                                 x = (avgCenterX - hallRoot.x).toInt() - tooltipSize.width / 2,
-                                y = (minY - hallRoot.y - tooltipGapPx).toInt() - tooltipSize.height
+                                y = (minY - hallRoot.y - tooltipGapPx).toInt()
                             )
                         }
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color.White)
+                        .clip(RoundedCornerShape(30.dp))
+                        .background(Color(0xFF6E6E6E))
                         .padding(horizontal = 10.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = "${selected.size} seats",
-                        color = Color.Black,
+                        text = "Row ${selected.first().first + 1} • ${selected.size} seats",
+                        color = Color.White,
                         fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
