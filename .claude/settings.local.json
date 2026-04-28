@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(git mv *)",
+      "Bash(rm \"app/src/main/java/com/codewithdipesh/ticketbooking/booking/seatBooking/gl/shaders/vertex.glsl\" \"app/src/main/java/com/codewithdipesh/ticketbooking/booking/seatBooking/gl/shaders/fragment.glsl\")",
+      "Bash(rmdir \"app/src/main/java/com/codewithdipesh/ticketbooking/booking/seatBooking/gl/shaders\")",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }
